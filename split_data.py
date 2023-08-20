@@ -1,7 +1,9 @@
 import argparse
+import re
 import pandas as pd 
 
 def split_data(diff_types='changes'):
+    print(diff_types)
     df = pd.read_parquet(f'data/cmg-data-processed.parquet', engine='fastparquet')
     df = df.sort_values(by=['extract_level'])
     result = list()
@@ -12,7 +14,15 @@ def split_data(diff_types='changes'):
                 if l.startswith('-') or l.startswith('+'):
                     diff.append(l)
             elif diff_types=='alldiffs':
-                diff.append(l)
+                if (l.startswith('@@')):
+                    tmp = re.sub('@@.+?@@', '', l)
+                    tmp = '<same>' + tmp
+                    diff.append(tmp)
+                elif l.startswith('-') or l.startswith('+'):
+                    diff.append(l)
+                else:
+                    tmp = '<same>' + l
+                    diff.append(tmp)
         doc = row['label'].split()
         if row['old_path_file'] == row['new_path_file']:
             file = row['new_path_file']
