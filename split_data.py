@@ -44,7 +44,7 @@ def main():
                         help="Diff type: get all diffs or only changes")
     
     args = parser.parse_args()
-    
+
     split_data(args.diff_type)
 
 if __name__ == "__main__":
