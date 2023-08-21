@@ -417,6 +417,9 @@ def main():
                    total=num_train_optimization_steps)
         train_dataloader = cycle(train_dataloader)
         eval_flag = True
+
+        num_eval = 0
+
         for step in bar:
             batch = next(train_dataloader)
             batch = tuple(t.to(device) for t in batch)
@@ -510,6 +513,7 @@ def main():
                     logger.info("  Best ppl:%s", round(np.exp(eval_loss), 5))
                     logger.info("  "+"*"*20)
                     best_loss = eval_loss
+                    num_eval = 0
                     # Save best checkpoint for best ppl
                     output_dir = os.path.join(
                         args.output_dir, 'checkpoint-best-ppl')
@@ -520,7 +524,9 @@ def main():
                     output_model_file = os.path.join(
                         output_dir, "pytorch_model.bin")
                     torch.save(model_to_save.state_dict(), output_model_file)
-
+                else:
+                    print("Eval not changes", num_eval, " times!")
+                    num_eval += 1
                 # Calculate bleu
                 if 'dev_bleu' in dev_dataset:
                     eval_examples, eval_data = dev_dataset['dev_bleu']
@@ -586,6 +592,10 @@ def main():
                     output_model_file = os.path.join(
                         output_dir, "pytorch_model.bin")
                     torch.save(model_to_save.state_dict(), output_model_file)
+            
+            if num_eval > 4:
+                print("Early Stop!")
+                break
 
     if args.do_test:
         files = []
