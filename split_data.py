@@ -9,19 +9,22 @@ def split_data(diff_types='changes'):
     result = list()
     for _, row in df.iterrows():
         diff = list()
-        for l in row['diff'].splitlines():
-            if diff_types=='changes':
+        if diff_types=='changes':
+            for l in row['diff'].splitlines():
                 if l.startswith('-') or l.startswith('+'):
                     diff.append(l)
-            elif diff_types=='alldiffs':
+        elif diff_types=='alldiffs':
+            for l in row['diff'].splitlines():
                 if (l.startswith('@@')):
                     tmp = re.sub('@@.+?@@', '', l)
-                    tmp = '<same>' + tmp
+                    if (len(tmp) <= 0):
+                        continue
+                    tmp = '<same> ' + tmp
                     diff.append(tmp)
                 elif l.startswith('-') or l.startswith('+'):
                     diff.append(l)
-                else:
-                    tmp = '<same>' + l
+                elif len(l) > 0:
+                    tmp = '<same> ' + l
                     diff.append(tmp)
         doc = row['label'].split()
         if row['old_path_file'] == row['new_path_file']:
