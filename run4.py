@@ -63,7 +63,7 @@ class Example(object):
         self.target = target
 
 
-def read_examples(filename, mapping_variable=True):
+def read_examples(filename, mapping_variable):
     """Read examples from filename."""
     examples = []
     if mapping_variable:
