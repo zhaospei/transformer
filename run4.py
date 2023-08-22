@@ -63,14 +63,15 @@ class Example(object):
         self.target = target
 
 
-def read_examples(filename):
+def read_examples(filename, mapping_variable=True):
     """Read examples from filename."""
     examples = []
-    with open('data/variable_change.json') as f:
-        data = json.load(f)
-        mapping = dict()
-        for k,v in data.items():
-            mapping[k.replace('file_fc_patch.csv_','')] = v
+    if mapping_variable:
+        with open('data/variable_change.json') as f:
+            data = json.load(f)
+            mapping = dict()
+            for k,v in data.items():
+                mapping[k.replace('file_fc_patch.csv_','')] = v
     c = 0
     print('Read examples: ', filename)
     with open(filename, encoding="utf-8") as f:
@@ -86,13 +87,14 @@ def read_examples(filename):
             code = ' '.join(code.strip().split())
             nl = ' '.join(js['docstring_tokens']).replace('\n', '')
             nl = ' '.join(nl.strip().split())
-            if js['index'] in mapping:
-                for k,v in mapping[js['index']].items():
-                    # if idx <= 5:
-                    #     print('map',k,v)
-                    if len(k) > 2: 
-                        code = code.replace(k,v)
-                        nl = nl.replace(k,v)
+            if mapping_variable:
+                if js['index'] in mapping:
+                    for k,v in mapping[js['index']].items():
+                        # if idx <= 5:
+                        #     print('map',k,v)
+                        if len(k) > 2: 
+                            code = code.replace(k,v)
+                            nl = nl.replace(k,v)
             
             examples.append(
                 Example(
@@ -313,6 +315,8 @@ def main():
                         help="random seed for initialization")
     parser.add_argument('--hidden_size', type=int, default=128,
                         help="size embedding word2vec")
+    parser.add_argument('--mapping_variable', type=bool, default=True,
+                        help="mapping file name")
     # print arguments
     args = parser.parse_args()
     logger.info(args)
@@ -368,7 +372,7 @@ def main():
 
     if args.do_train:
         # Prepare training data loader
-        train_examples = read_examples(args.train_filename)
+        train_examples = read_examples(args.train_filename, args.mapping_variable)
         train_features = convert_examples_to_features(
             train_examples, tokenizer, args, stage='train')
         all_source_ids = torch.tensor(
@@ -455,7 +459,7 @@ def main():
                 if 'dev_loss' in dev_dataset:
                     eval_examples, eval_data = dev_dataset['dev_loss']
                 else:
-                    eval_examples = read_examples(args.dev_filename)
+                    eval_examples = read_examples(args.dev_filename, args.mapping_variable)
                     eval_features = convert_examples_to_features(
                         eval_examples, tokenizer, args, stage='dev')
                     all_source_ids = torch.tensor(
@@ -531,7 +535,7 @@ def main():
                 if 'dev_bleu' in dev_dataset:
                     eval_examples, eval_data = dev_dataset['dev_bleu']
                 else:
-                    eval_examples = read_examples(args.dev_filename)
+                    eval_examples = read_examples(args.dev_filename, args.mapping_variable)
                     eval_examples = random.sample(
                         eval_examples, min(1000, len(eval_examples)))
                     eval_features = convert_examples_to_features(
@@ -605,7 +609,7 @@ def main():
             files.append(args.test_filename)
         for idx, file in enumerate(files):
             logger.info("Test file: {}".format(file))
-            eval_examples = read_examples(file)
+            eval_examples = read_examples(file, args.mapping_variable)
             eval_features = convert_examples_to_features(
                 eval_examples, tokenizer, args, stage='test')
             all_source_ids = torch.tensor(
