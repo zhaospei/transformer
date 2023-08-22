@@ -317,6 +317,9 @@ def main():
                         help="size embedding word2vec")
     parser.add_argument('--mapping_variable', type=bool, default=True,
                         help="mapping file name")
+
+    print(args)
+
     # print arguments
     args = parser.parse_args()
     logger.info(args)
