@@ -315,13 +315,12 @@ def main():
                         help="random seed for initialization")
     parser.add_argument('--hidden_size', type=int, default=128,
                         help="size embedding word2vec")
-    parser.add_argument('--mapping_variable', type=bool, default=True,
-                        help="mapping file name")
-
-    print(args)
+    parser.add_argument("--mapping_variable", action='store_true',
+                        help="Whether to run training.")
 
     # print arguments
     args = parser.parse_args()
+    print(args)
     logger.info(args)
     # Setup CUDA, GPU & distributed training
     if args.local_rank == -1 or args.no_cuda:
